@@ -1,0 +1,58 @@
+datasource db {
+  provider = "mongodb"
+  url      = env("MONGODB_URI")
+}
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/@prisma-mongo/client"
+}
+
+model Partner {
+  id           String         @id @default(auto()) @map("_id") @db.ObjectId
+  slug         String         @unique
+  name         String
+  description  String
+  image        String
+  url          String
+  publicKey    String
+  privateKey   String
+  identifier   String
+  Service      Service[]
+  Subscription Subscription[]
+  Notification Notification[]
+}
+
+model Service {
+  id               String         @id @default(auto()) @map("_id") @db.ObjectId
+  partnerServiceId String
+  name             String
+  description      String
+  image            String
+  partner          Partner        @relation(fields: [partnerId], references: [id])
+  partnerId        String         @db.ObjectId
+  Subscription     Subscription[]
+  Notification     Notification[]
+}
+
+model Subscription {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  comment   String?
+  service   Service @relation(fields: [serviceId], references: [id])
+  serviceId String  @db.ObjectId
+  partner   Partner @relation(fields: [partnerId], references: [id])
+  partnerId String  @db.ObjectId
+  status    String  @default("PENDING")
+  userId    Int
+}
+
+model Notification {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  content   String?
+  title     String?
+  service   Service? @relation(fields: [serviceId], references: [id])
+  serviceId String?  @db.ObjectId
+  partner   Partner? @relation(fields: [partnerId], references: [id])
+  partnerId String?  @db.ObjectId
+  userId    Int
+}
